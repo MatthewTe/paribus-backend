@@ -1,0 +1,10 @@
+version: "3.3"
+
+services:
+
+  django-backend:
+    build: ./paribus_backend
+    container_name: django-backend
+
+    environment:
+      - PYTHONUNBUFFERED=1

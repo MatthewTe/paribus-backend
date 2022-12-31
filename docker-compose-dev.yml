@@ -1,0 +1,50 @@
+version: "3.3"
+
+# Config TODOs:
+# Incorporate the env files in to the make_migration script
+# Test to make sure that the database and the django app are talking to eachother.
+
+services:
+
+  django-backend:
+
+    extends:
+      file: docker-compose-base.yml
+      service: django-backend
+
+    networks:
+      - paribus-backend-network
+
+    ports:
+      - "8000:8000"
+  
+    env_file:
+      - development-config.env
+
+    environment:
+      - DJANGO_SETTINGS_MODULE=paribus_backend.local_dev_settings
+
+    volumes:
+      - ./paribus_backend:/app/code
+
+    command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+  
+  test-database:
+    container_name: postgres-dev-database
+
+    image: postgres:15.1
+              
+    networks:
+      - paribus-backend-network
+
+    env_file:
+      - development-config.env
+
+    volumes:
+      - backend-development-volume:/var/lib/postgresql/data
+
+networks:
+  paribus-backend-network:
+
+volumes:
+  backend-development-volume:
