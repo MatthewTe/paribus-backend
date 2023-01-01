@@ -1,14 +1,6 @@
 import uuid
 from django.db import models
 
-
-def default_ticker():
-    def inner(obj):
-        if obj.is_public:
-            return ''
-        return None
-    return inner
-
 class CompanyCore(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     company_name = models.CharField(max_length=100, blank=True)

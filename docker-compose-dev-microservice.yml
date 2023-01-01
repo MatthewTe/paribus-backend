@@ -1,0 +1,40 @@
+version: '3.3'
+
+services:
+
+  django-backend:
+
+    extends:
+      file: docker-compose-dev.yml
+      service: django-backend
+
+  test-database:
+
+    extends:
+      file: docker-compose-dev.yml
+      service: test-database
+
+  stock-price-microservice:
+
+    build:
+      context: ./paribus_microservices/stock-price-microservice
+      dockerfile: Dockerfile
+
+    container_name: flask-stock-price-microservice
+
+    volumes:
+      - ./paribus_microservices/stock-price-microservice:/app
+
+    command: ["gunicorn", "-w", "1", "-b", "0.0.0.0:5001", "--reload", "stock-price-microservice:app"]
+
+    networks:
+      - paribus-backend-network
+
+    ports:
+      - "5001:5001"
+
+networks:
+  paribus-backend-network:
+
+volumes:
+  backend-development-volume:

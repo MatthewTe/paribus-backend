@@ -7,7 +7,7 @@ version: "3.3"
 services:
 
   django-backend:
-
+  
     extends:
       file: docker-compose-base.yml
       service: django-backend
