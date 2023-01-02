@@ -17,20 +17,19 @@ class CompanyCore(models.Model):
         verbose_name = "Core Company Metadata"
         verbose_name_plural = "Companies"
 
-
 class PriceData(models.Model):
     ticker = models.CharField(max_length=10)
-    timestamp = models.DateTimeField(unique=True)
+    timestamp = models.DateTimeField()
     open = models.FloatField()
     high = models.FloatField()
     low = models.FloatField()
     close = models.FloatField()
     volume = models.PositiveIntegerField()
     company_id = models.ForeignKey(CompanyCore, on_delete=models.CASCADE)
+    price_ticker_id = models.CharField(unique=True, max_length=200)
 
     def __str__(self):
         return f"{self.ticker}-{self.timestamp}-{self.close}"
 
     class Meta:
         verbose_name = "Company Price Timeseries"
-

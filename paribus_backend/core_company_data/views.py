@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from django.http import JsonResponse
 from rest_framework import viewsets, status
 from .serializers import PriceDataSerializer
@@ -21,8 +20,6 @@ def get_price_data(request):
     serializer = PriceDataSerializer(queryset, many=True)
     return Response(serializer.data)
 
-# TODO: Determine how to handle duplicate values being written to the database
-# - Will have to add logic to create a unique timestamp + ticker symbol/ company id to make sure that more than one ticker can be written to the database
 @api_view(['POST'])
 def create_price_data(request):
     """The logic that handels the POST request from the flask microservice which writes stock price data to the database
@@ -78,7 +75,8 @@ def create_price_data(request):
         'low': datum['Low'],
         'close': datum['Close'],
         'volume': datum['Volume'],
-        'company_id': company_id
+        'company_id': company_id,
+        'price_ticker_id': f"{ticker}-{datetime.datetime.fromtimestamp(datum['Date']/1000).strftime('%Y-%m-%d')}"
         } for datum in data
     ]
 
