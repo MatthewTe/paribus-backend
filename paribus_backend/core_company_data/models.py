@@ -10,6 +10,9 @@ class CompanyCore(models.Model):
     is_public = models.BooleanField(blank=True)
     ticker = models.CharField(max_length=10, blank=True, null=True)
 
+    def __str__(self):
+        return f"{self.company_name}-{self.id}"
+
     class Meta:
         verbose_name = "Core Company Metadata"
         verbose_name_plural = "Companies"
@@ -17,14 +20,17 @@ class CompanyCore(models.Model):
 
 class PriceData(models.Model):
     ticker = models.CharField(max_length=10)
-    timestamp = models.DateTimeField()
+    timestamp = models.DateTimeField(unique=True)
     open = models.FloatField()
     high = models.FloatField()
     low = models.FloatField()
     close = models.FloatField()
     volume = models.PositiveIntegerField()
-    market_cap = models.BigIntegerField()
     company_id = models.ForeignKey(CompanyCore, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.ticker}-{self.timestamp}-{self.close}"
 
     class Meta:
         verbose_name = "Company Price Timeseries"
+
