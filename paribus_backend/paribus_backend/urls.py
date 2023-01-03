@@ -9,6 +9,6 @@ urlpatterns = [
     # Status/Uptime ping view:
     path("status_code/ping", ping, name="get_status"),
 
-    path("stock/", include("core_company_data.urls"))
+    path("company/", include("core_company_data.urls"))
 
 ]

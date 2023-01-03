@@ -33,21 +33,21 @@ services:
     ports:
       - "5001:5001"
 
-  uptime-kuma:
-    image: louislam/uptime-kuma:1
+  #uptime-kuma:
+  #  image: louislam/uptime-kuma:1
     
-    container_name: uptime-kuma
+  #  container_name: uptime-kuma
     
-    volumes:
-      - ./uptime-kuma-data:/app/data
+  #  volumes:
+  #    - ./uptime-kuma-data:/app/data
 
-    networks:
-      - paribus-backend-network
+  #  networks:
+  #    - paribus-backend-network
     
-    ports:
-      - "3001:3001"
+  #  ports:
+  #    - "3001:3001"
 
-    restart: always
+  #  restart: always
       
 networks:
   paribus-backend-network:

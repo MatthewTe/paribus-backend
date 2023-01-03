@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 
 from .models import PriceData, CompanyCore
-from .serializers import PriceDataSerializer
+from .serializers import PriceDataSerializer, CompanyCoreSerializer
 
 import requests
 import datetime
@@ -19,6 +19,19 @@ def get_price_data(request):
     
     serializer = PriceDataSerializer(queryset, many=True)
     return Response(serializer.data)
+
+@api_view(['GET'])
+def get_tickers(request):
+    
+    # Only querying companies that are public and have ticker symbols:
+    ticker = CompanyCore.objects.filter(is_public=True, ticker__isnull=False)
+
+    # Serializing the queryset:
+    serializer = CompanyCoreSerializer(ticker, many=True)
+
+    # Returning the serialized data as a JSON response:
+    return Response(serializer.data)
+
 
 @api_view(['POST'])
 def create_price_data(request):
@@ -96,50 +109,78 @@ def create_price_data(request):
 
 # Ping method for the flask microservice: 
 def ping_microservice(request):
+    """
+    Sends a GET request to the Flask microservice at the specified URL and returns the response from the Flask microservice as a JSON response.
+
+    Args:
+        request: a GET request
+
+    Returns:
+        A JSON response containing the response from the Flask microservice.
+    """
     # Send a GET request to the Flask microservice
     response = requests.get('http://flask-stock-price-microservice:5001/ping')
     
     # Return the response from the Flask microservice as a JSON response
     return JsonResponse(response.json())
 
-
-
 # Request method that makes request to the microserivice to get it to make a POST request to the create_price_data view to write stock price data:
 def write_stock_price_data(request):
+    """Makes a request to a microservice to retrieve and write stock price data to the database.
 
-    # Making ping request to the microservice to get status:
-    microservice_status = requests.get("http://flask-stock-price-microservice:5001/ping")
+    This function loops through a list of company tickers, sends a GET request to the microservice with
+    the ticker and date range as url parameters. The microservice then makes a POST request to the
+    'create_price_data' view to write the stock price data to the database. 
 
-    if microservice_status.status_code == 200:
-        # Tasking the microservice to write stock price data to the database through the POST request:
-        price_ingestion_endpoint = "http://django-backend:8000/stock/price-data/create/"
+    The start date of the date range is determined by the existing records in the database for the ticker.
+    If no records exist, the start date is set to 2008-01-01. If records exist, the start date is set to
+    the latest timestamp in the database plus one day. The end date of the date range is the current date.
+
+    Args:
+        request: A django request object
+
+    Returns:
+        A JSON response object containing the responses from the requests made to the microservice. 
+
+    """
+    # Getting a list of ticker symbols: 
+    tickers = CompanyCore.objects.filter(is_public=True, ticker__isnull=False)
+
+    response_content = {}
+    for company in tickers:
         
-        # Determining what the start date fof the stock price data will be based on existing records in the database:
-        existing_price_data = PriceData.objects.filter(ticker="TSLA")
+        # Making ping request to the microservice to get status:
+        microservice_status = requests.get("http://flask-stock-price-microservice:5001/ping")
 
-        # If the queryset is empty, set the start_date to 2008-01-01:
-        if not existing_price_data:
-            start_date = datetime.datetime(2008, 1, 1)
-
-        else:
-            start_date = existing_price_data.order_by('-timestamp')[0].timestamp + datetime.timedelta(days=1)
+        if microservice_status.status_code == 200:
+            # Tasking the microservice to write stock price data to the database through the POST request:
+            price_ingestion_endpoint = "http://django-backend:8000/company/stock/price-data/create/"
             
-        # Convert the timestamp value which is a DateTimeField into a date in the format: yyyy-mm-dd
-        start_date = start_date.date()
-        end_date = datetime.datetime.now().date()
+            # Determining what the start date fof the stock price data will be based on existing records in the database:
+            existing_price_data = PriceData.objects.filter(ticker=company.ticker)
 
-        # Making request to the microservice to write price data:
-        url_params = {
-            "endpoint": price_ingestion_endpoint,
-            "min_date_range": start_date,
-            "max_date_range": end_date
-        }
+            # If the queryset is empty, set the start_date to 2008-01-01:
+            if not existing_price_data:
+                start_date = datetime.datetime(2008, 1, 1)
 
-        # Making GET request to the microservice to write price data w the following values as url params:
-        response = requests.get(url="http://flask-stock-price-microservice:5001/get-price-data/TSLA", params=url_params)
-        #print(response.text)
+            else:
+                start_date = existing_price_data.order_by('-timestamp')[0].timestamp + datetime.timedelta(days=1)
+                
+            # Convert the timestamp value which is a DateTimeField into a date in the format: yyyy-mm-dd
+            start_date = start_date.date()
+            end_date = datetime.datetime.now().date()
 
-        return JsonResponse(response.json(), safe=False)
+            # Making request to the microservice to write price data:
+            url_params = {
+                "endpoint": price_ingestion_endpoint,
+                "min_date_range": start_date,
+                "max_date_range": end_date
+            }
 
-    else:
-        pass 
+            # Making GET request to the microservice to write price data w the following values as url params:
+            response = requests.get(url=f"http://flask-stock-price-microservice:5001/get-price-data/{company.ticker}", params=url_params)
+            
+            # Adding response from the request to the lists:
+            response_content[company.ticker] = response.json()
+
+    return JsonResponse(response_content, safe=False)
