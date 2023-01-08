@@ -35,7 +35,8 @@ INSTALLED_APPS = [
     'rest_framework',
 
     # Internal Apps:
-    'core_company_data'
+    'core_company_data',
+    'account_management'
 ]
 
 MIDDLEWARE = [

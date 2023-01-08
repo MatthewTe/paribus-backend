@@ -31,5 +31,10 @@ class PriceData(models.Model):
     def __str__(self):
         return f"{self.ticker}-{self.timestamp}-{self.close}"
 
+    # TODO: Modify save function to add easily calculable technical indicators like pct change to the Model.
+    # - Daily pct change 
+
     class Meta:
         verbose_name = "Company Price Timeseries"
+
+
