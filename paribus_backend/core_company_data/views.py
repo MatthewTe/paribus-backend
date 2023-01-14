@@ -88,8 +88,7 @@ def create_price_data(request):
         'low': datum['Low'],
         'close': datum['Close'],
         'volume': datum['Volume'],
-        'company_id': company_id,
-        'price_ticker_id': f"{ticker}-{datetime.datetime.fromtimestamp(datum['Date']/1000).strftime('%Y-%m-%d')}"
+        'company_id': company_id
         } for datum in data
     ]
 

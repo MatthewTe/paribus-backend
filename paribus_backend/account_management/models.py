@@ -24,6 +24,8 @@ class AccountTransactions(models.Model):
         return f"{self.transaction_id} for account {self.account}"
 
     # TODO: Modify a save method to update the Account value based on the transaction value when a transaction is created.
+    def save(self, *args, **kwargs):
+        super(AccountTransactions, self).save(*args, **kwargs)
 
     class Meta:
         verbose_name_plural = "Account Transactions"
