@@ -48,6 +48,7 @@ class PriceDataTestCase(TestCase):
             'company_id': self.company,
         }
 
+    # General functionality:
     def test_save_with_yesterday_data(self):
         PriceData.objects.create(**self.yesterday_data)
         obj = PriceData.objects.create(**self.data)
@@ -61,7 +62,7 @@ class PriceDataTestCase(TestCase):
         obj = PriceData.objects.create(**self.data)
         self.assertEqual(str(obj), f"{self.data['ticker']}-{self.data['timestamp']}-{self.data['close']}")
     
-    
+    # Percentage price change test on multiple objects and datetime:
     def test_multiple_objects(self):
         before_yesterday_obj = PriceData.objects.create(**self.day_before_yesterday_data)
         yesterday_obj = PriceData.objects.create(**self.yesterday_data)
